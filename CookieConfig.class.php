@@ -1,52 +1,56 @@
 <?php
 /**
- * Базовый класс
- *
- * @since 30 Sep 2009
- */
-
-/**
  * Class CookieConfig
- * @author Alexander Demidov <dimti@bk.ru>
- * TODO: Ввести версионность конфигураций, для того, чтобы при изменении конфигурации - старая удалялясь
+ * TODO: Добавить временную метку для синхронизации конфигурации (для очистки куки при обновлении структуры классов)
  */
-abstract class CookieConfig
+abstract class CookieConfig implements iCookieConfig
 {
     private static $config;
 
-    protected $config_of_sub_class = [];
-
     private static $instances = [];
 
+    private static $life_time = 10800; // 3 hour
+
+    private $domain;
+
+    protected $config_of_sub_class = [];
+
     /**
+     * @param $domain
      * @return CookieConfig
      */
-    public static function getInstance()
+    public static function getInstance($domain = null)
     {
-        if (!isset(self::$instances[__CLASS__])) {
-            self::$instances[__CLASS__] = new static();
+        $class = get_called_class();
+        if (!isset(self::$instances[$class])) {
+            self::$instances[$class] = new static($domain);
         }
-        return self::$instances[__CLASS__];
+        return self::$instances[$class];
     }
 
-    private function __construct()
+    private function __construct($domain)
     {
+        $this->domain = ($domain ? $domain : self::Server('HTTP_HOST'));
         if (is_null(self::$config)) {
-            self::$config = json_decode(
-                self::Cookie(
-                    $this->getVarName(get_parent_class($this)),
-                    json_encode([])),
-                true);
+            $cookie_value = self::Cookie(
+                $this->getCookieConfigVarName(),
+                json_encode([]));
+            $cookie_value = html_entity_decode($cookie_value);
+            self::$config = json_decode($cookie_value,true);
         }
         $this->config_of_sub_class = isset(self::$config[$this->getVarName()]) ? self::$config[$this->getVarName()] : [];
     }
 
-    protected function getVarName($class_name = null)
+    protected function getVarName()
     {
-        if (is_null($class_name)) {
-            $class_name = get_class($this);
-        }
+        $class_name = get_class($this);
         return substr($class_name, 0, -6);
+    }
+
+    private function getCookieConfigVarName()
+    {
+        $domain_parts = explode('.', $this->domain);
+        return 'Cookie_' . $domain_parts[0];
     }
 
     protected function get($param_name, $default = null)
@@ -65,16 +69,34 @@ abstract class CookieConfig
         $this->saveConfigToCookie();
     }
 
-    protected function saveConfigToCookie()
+    private function getExpire()
     {
-        setcookie($this->getVarName(get_parent_class($this)), json_encode(self::$config), null, '/');
+        return time() + self::$life_time;
     }
 
-    static private function Cookie($key = null, $default = false)
+    private function saveConfigToCookie()
+    {
+        $name = $this->getCookieConfigVarName();
+        $value = json_encode(self::$config);
+        $expire = $this->getExpire();
+        $path = '/';
+        $domain = $this->domain;
+        setcookie($name, $value, $expire, $path, $domain);
+    }
+
+    private static function Cookie($key = null, $default = false)
     {
         if ($key === null) {
             return $_COOKIE;
         }
         return (isset($_COOKIE[$key])) ? $_COOKIE[$key] : $default;
+    }
+
+    private static function Server($key = null, $default = null)
+    {
+        if ($key === null) {
+            return $_SERVER;
+        }
+        return (isset($_SERVER[$key])) ? $_SERVER[$key] : $default;
     }
 }
