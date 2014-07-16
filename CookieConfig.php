@@ -103,7 +103,9 @@ abstract class CookieConfig implements iCookieConfig
 	public static function getSub($category, $name, $default = null) {
 		$value = $default;
 		$cookie_category = array();
-		parse_str(html_entity_decode($_COOKIE[$category]), $cookie_category);
+		if (array_key_exists($category, $_COOKIE)) {
+			parse_str( html_entity_decode( $_COOKIE[ $category ] ), $cookie_category );
+		}
 		if ($cookie_category && is_array($cookie_category)) {
 			if (array_key_exists($name, $cookie_category)) {
 				$value = $cookie_category[$name];
