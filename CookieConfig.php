@@ -17,7 +17,7 @@ abstract class CookieConfig implements iCookieConfig
 
     /**
      * @param $domain
-     * @return CookieConfig
+     * @desc return PHP-Doc parameter not setting for correct work IDE helper
      */
     public static function getInstance($domain = null)
     {

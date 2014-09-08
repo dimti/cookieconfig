@@ -3,7 +3,8 @@
 interface iCookieConfig
 {
     /**
-     * @return OrderSessionCookie
+     * @return
+     * @desc return parameter is empty for correct work with IDE helper
      */
     public static function getInstance();
 }
