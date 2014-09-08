@@ -9,8 +9,6 @@ abstract class CookieConfig implements iCookieConfig
 
     private static $instances = [];
 
-    private static $life_time = 10800; // 3 hour
-
     private $domain;
 
     protected $config_of_sub_class = [];
@@ -23,6 +21,9 @@ abstract class CookieConfig implements iCookieConfig
     {
         $class = get_called_class();
         if (!isset(self::$instances[$class])) {
+	        if ($domain == null) {
+		        $domain = preg_replace('#:[0-9]+$#', '', Env::Server('HTTP_HOST'));
+	        }
             self::$instances[$class] = new static($domain);
         }
         return self::$instances[$class];
@@ -71,7 +72,7 @@ abstract class CookieConfig implements iCookieConfig
 
     private function getExpire()
     {
-        return time() + self::$life_time;
+        return time() + time();
     }
 
     private function saveConfigToCookie()
