@@ -21,8 +21,8 @@ abstract class CookieConfig implements iCookieConfig
     {
         $class = get_called_class();
         if (!isset(self::$instances[$class])) {
-	        if ($domain == null) {
-		        $domain = preg_replace('#:[0-9]+$#', '', Env::Server('HTTP_HOST'));
+	        if ($domain == null && self::Server('HTTP_HOST')) {
+		        $domain = preg_replace('#:[0-9]+$#', '', self::Server('HTTP_HOST'));
 	        }
             self::$instances[$class] = new static($domain);
         }

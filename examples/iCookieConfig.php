@@ -2,7 +2,7 @@
 /**
  * @desc IDE helper
  */
-if (0) {
+if (!interface_exists('iCookieConfig')) {
 	interface iCookieConfig {
 		/**
 		 * @return
