@@ -73,7 +73,7 @@ abstract class CookieConfig implements iCookieConfig
 
     private function getExpire()
     {
-        return time() + time();
+        return time() + time()/3;
     }
 
     private function saveConfigToCookie()
