@@ -31,6 +31,7 @@ abstract class CookieConfig implements iCookieConfig
 
     private function __construct($domain)
     {
+	    //TODO: убирать порт из имени домена
         $this->domain = ($domain ? $domain : self::Server('HTTP_HOST'));
         if (is_null(self::$config)) {
             $cookie_value = self::Cookie(
